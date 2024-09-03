@@ -1,0 +1,56 @@
+{
+    "configs": [
+        {
+            "path": "example-files/global.json",
+            "mappings": [
+                {
+                    "inPath": "globalAppConfigs",
+                    "toPath": "globals"
+                },
+                {
+                    "inPath": "deploymentConfigs",
+                    "toPath": "deploymentValues"
+                }
+            ],
+            "applyFile": "after"
+        },
+        {
+            "path": "example-files/regional.json",
+            "mappings": [
+                {
+                    "inPath": "globalAppConfigs",
+                    "toPath": "globals"
+                },
+                {
+                    "inPath": "deploymentConfigs",
+                    "toPath": "deploymentValues"
+                }
+            ],
+            "applyFile": "later"
+        },
+        {
+            "path": "example-files/integration.json",
+            "mappings": [
+                {
+                    "inPath": "deploymentConfigs",
+                    "toPath": "deploymentValues"
+                }
+            ],
+            "applyFile": "before"
+        },
+        {
+            "path": "example-files/local.json",
+            "mappings": [
+                {
+                    "inPath": "globalAppConfigs",
+                    "toPath": "globals"
+                },
+                {
+                    "inPath": "deploymentConfigs",
+                    "toPath": "deploymentValues"
+                }
+            ]
+        }
+    ],
+    "version": "1.0.0"
+}

@@ -1,0 +1,10 @@
+{
+    "deploymentConfigs":{
+        "stage": "integration"
+    },
+    "appConfigs": {
+        "app1": {
+            "dbConfigs": "someApp1IntegrationConnectionString"
+        }
+    }
+}

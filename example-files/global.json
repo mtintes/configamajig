@@ -1,0 +1,10 @@
+{
+    "globalAppConfigs":{
+        "dbConfigs": "someGlobalConnectionString",
+        "someAPIKey": "someAPIKey"
+    },
+    "deploymentConfigs":{
+        "stage": "development",
+        "someOtherConfigs": "someOtherConfigs"
+    }
+}

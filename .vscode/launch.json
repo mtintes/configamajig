@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "debug",
             "program": "${workspaceFolder}",
-            "args": ["replace", "--config", "example-files/config.json"]
+            "args": ["replace", "--config", "example-files/config.json", "--output", "example-files/output.txt", "--input", "example-files/input1.txt"],
         },
     ]
 }

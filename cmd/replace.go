@@ -38,8 +38,27 @@ to quickly create a Cobra application.`,
 			return
 		}
 
-		fmt.Println(memoryMap)
+		// templatedMemoryMap, err := actions.TemplateMemoryMap(memoryMap.(map[string]interface{}))
 
+		// if err != nil {
+		// 	fmt.Println(err)
+		// 	return
+		// }
+
+		inputPath := cmd.Flag("input").Value.String()
+		file, err := actions.RunTemplate(inputPath, memoryMap.(map[string]interface{}))
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		outputPath := cmd.Flag("output").Value.String()
+		err = actions.WriteFile(outputPath, file)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 	},
 }
 

@@ -6,5 +6,14 @@
     "deploymentConfigs":{
         "stage": "production",
         "someOtherConfigs": "someOtherConfigs"
+    },
+    "input1": {
+        "file": "file",
+        "text": "text"
+    },
+    "deepValues":{
+        "deepvalue1":{
+            "thing": "thinglocal"
+        }
     }
 }

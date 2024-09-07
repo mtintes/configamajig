@@ -42,3 +42,11 @@ func slurpYaml(input string) (interface{}, error) {
 
 	return data, nil
 }
+
+func slurpGenericFile(inputPath string) ([]byte, error) {
+	return os.ReadFile(inputPath)
+}
+
+func WriteFile(outputPath string, file string) error {
+	return os.WriteFile(outputPath, []byte(file), 0644)
+}

@@ -3,17 +3,19 @@ package actions
 import (
 	"errors"
 	"fmt"
+	"strings"
+
+	"github.com/nqd/flat"
 )
 
 func ReadMemoryMap(configurationMap *ConfigurationMap) (interface{}, error) {
-	masterMemoryMap := make(map[string]interface{})
+	var masterMemoryMap = make(map[string]interface{})
 	storedFiles := make([]StoredMemoryMap, 0)
 	mapLengthCount := 0
 	for _, config := range configurationMap.Configs {
 		mapLengthCount += len(config.Mappings) + 1
 	}
 
-	index := 0
 	for _, config := range configurationMap.Configs {
 		filePath := config.Path
 		fileType := findFileType(filePath)
@@ -23,7 +25,7 @@ func ReadMemoryMap(configurationMap *ConfigurationMap) (interface{}, error) {
 
 		file = returnStoredFile(storedFiles, filePath)
 
-		if file != nil {
+		if file == nil {
 			if fileType == "json" {
 				file, err = slurpJson(filePath)
 			} else if fileType == "yaml" {
@@ -39,28 +41,31 @@ func ReadMemoryMap(configurationMap *ConfigurationMap) (interface{}, error) {
 
 		fmt.Println(file)
 
+		flatFile, err := flat.Flatten(file.(map[string]interface{}), nil)
+
+		if err != nil {
+			return nil, err
+		}
+
 		if config.ApplyFile == "before" {
-			for key, value := range file.(map[string]interface{}) {
+			for key, value := range flatFile {
 				masterMemoryMap[key] = value
 			}
-			file, masterMemoryMap = applyMappings(file, config.Mappings, masterMemoryMap)
+			masterMemoryMap, flatFile = applyMappings(flatFile, config.Mappings, masterMemoryMap)
 		} else if config.ApplyFile == "later" {
-			file, masterMemoryMap = applyMappings(file, config.Mappings, masterMemoryMap)
-			storedFiles = append(storedFiles, StoredMemoryMap{file, filePath})
-			//store the file and put in the map if asked later
+			for key, value := range flatFile {
+				masterMemoryMap[key] = value
+			}
 		} else {
-			file, masterMemoryMap = applyMappings(file, config.Mappings, masterMemoryMap)
-			for key, value := range file.(map[string]interface{}) {
+			masterMemoryMap, flatFile = applyMappings(flatFile, config.Mappings, masterMemoryMap)
+			for key, value := range flatFile {
 				masterMemoryMap[key] = value
 			}
 		}
-
-		fmt.Println(file)
-		index++
-
+		storedFiles = append(storedFiles, StoredMemoryMap{File: flatFile, FileName: filePath})
 	}
 
-	return masterMemoryMap, nil
+	return flat.Unflatten((masterMemoryMap), nil)
 }
 
 func findFileType(filePath string) string {
@@ -79,19 +84,6 @@ func SafePropertyCheck(obj interface{}, key string) bool {
 	return false
 }
 
-func applyMappings(file interface{}, mappings []Mapping, masterMemoryMap map[string]interface{}) (interface{}, map[string]interface{}) {
-	newFile := file
-
-	for _, mapping := range mappings {
-		if SafePropertyCheck(file, mapping.InPath) {
-			masterMemoryMap[mapping.ToPath] = file.(map[string]interface{})[mapping.InPath]
-			delete(newFile.(map[string]interface{}), mapping.InPath)
-		}
-	}
-
-	return newFile, masterMemoryMap
-}
-
 func returnStoredFile(storedFiles []StoredMemoryMap, fileName string) interface{} {
 	for _, file := range storedFiles {
 		if file.FileName == fileName {
@@ -101,7 +93,20 @@ func returnStoredFile(storedFiles []StoredMemoryMap, fileName string) interface{
 	return nil
 }
 
+func applyMappings(flatFile map[string]interface{}, mappings []Mapping, masterMemoryMap map[string]interface{}) (map[string]interface{}, map[string]interface{}) {
+	for _, mapping := range mappings {
+		for key, value := range flatFile {
+			if strings.HasPrefix(key, mapping.InPath) {
+				keySuffix := key[len(mapping.InPath):]
+				masterMemoryMap[mapping.ToPath+keySuffix] = value
+				delete(flatFile, key)
+			}
+		}
+	}
+	return masterMemoryMap, flatFile
+}
+
 type StoredMemoryMap struct {
-	File     interface{}
+	File     map[string]interface{}
 	FileName string
 }

@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+	"math/rand/v2"
 
 	"github.com/mtintes/configamajig/actions"
 	"github.com/spf13/cobra"
@@ -31,12 +32,15 @@ to quickly create a Cobra application.`,
 		}
 		fmt.Println(configurationMap)
 
-		memoryMap, err := actions.ReadMemoryMap(configurationMap)
+		memoryMap, traces, err := actions.ReadMemoryMap(configurationMap)
 
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
+
+		random := rand.IntN(1000)
+		actions.WriteFile(fmt.Sprintf("traces/trace_%d.json", random), actions.TracesToString(traces))
 
 		// templatedMemoryMap, err := actions.TemplateMemoryMap(memoryMap.(map[string]interface{}))
 
@@ -46,7 +50,14 @@ to quickly create a Cobra application.`,
 		// }
 
 		inputPath := cmd.Flag("input").Value.String()
-		file, err := actions.RunTemplate(inputPath, memoryMap.(map[string]interface{}))
+		inputFile, err := actions.SlurpGenericFile(inputPath)
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		file, err := actions.RunTemplate(inputFile, memoryMap)
 
 		if err != nil {
 			fmt.Println(err)

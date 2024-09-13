@@ -2,14 +2,16 @@ package actions
 
 import (
 	"encoding/json"
-	"os"
 
+	"github.com/spf13/afero"
 	"gopkg.in/yaml.v3"
 )
 
-func slurpJson(input string) (interface{}, error) {
+var AppFs = afero.NewOsFs()
 
-	file, err := os.ReadFile(input)
+func SlurpJson(input string) (interface{}, error) {
+
+	file, err := afero.ReadFile(AppFs, input)
 
 	if err != nil {
 		return nil, err
@@ -25,9 +27,9 @@ func slurpJson(input string) (interface{}, error) {
 	return data, nil
 }
 
-func slurpYaml(input string) (interface{}, error) {
+func SlurpYaml(input string) (interface{}, error) {
 
-	file, err := os.ReadFile(input)
+	file, err := afero.ReadFile(AppFs, input)
 
 	if err != nil {
 		return nil, err
@@ -43,10 +45,10 @@ func slurpYaml(input string) (interface{}, error) {
 	return data, nil
 }
 
-func slurpGenericFile(inputPath string) ([]byte, error) {
-	return os.ReadFile(inputPath)
+func SlurpGenericFile(inputPath string) ([]byte, error) {
+	return afero.ReadFile(AppFs, inputPath)
 }
 
 func WriteFile(outputPath string, file string) error {
-	return os.WriteFile(outputPath, []byte(file), 0644)
+	return afero.WriteFile(AppFs, outputPath, []byte(file), 0644)
 }

@@ -2,7 +2,8 @@ package actions
 
 import (
 	"encoding/json"
-	"os"
+
+	"github.com/spf13/afero"
 )
 
 type ConfigurationMap struct {
@@ -34,7 +35,7 @@ func ReadConfigurationMap(input string) (*ConfigurationMap, error) {
 
 func findVersion(input string) (string, error) {
 
-	file, err := os.ReadFile(input)
+	file, err := afero.ReadFile(AppFs, input)
 
 	if err != nil {
 		return "", err
@@ -55,7 +56,7 @@ func findVersion(input string) (string, error) {
 
 func readVersion1(input string) (*ConfigurationMap, error) {
 
-	file, err := os.ReadFile(input)
+	file, err := afero.ReadFile(AppFs, input)
 
 	if err != nil {
 		return nil, err

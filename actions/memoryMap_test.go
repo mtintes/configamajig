@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -124,5 +125,327 @@ key2:
 
 		i++
 	}
+
+}
+
+func TestOmegaSuperDuperBonkersMemoryMap(t *testing.T) {
+
+	AppFs = afero.NewMemMapFs()
+
+	jsonGlobalData := `{
+		"GlobalAppConfigs": {	
+			"connectionString": "value.server.com",
+			"buildVersion": "development",
+			"buildNumber": 1,
+			"replacementInfo": "yes"
+			}
+		}`
+	_ = afero.WriteFile(AppFs, "test.json", []byte(jsonGlobalData), 0644)
+
+	jsonRegionalData := `{
+		"RegionalAppConfigs": {
+			"connectionString": "regionalValue.server.com",
+			"buildVersion": "integration",
+			"buildNumber": 2
+		},
+		"Apps": {
+			"app1": {
+				"specificConfig": {
+					"key": "valueregional",
+					"key3": "value3"
+				}
+			}		
+		}
+	}`
+	_ = afero.WriteFile(AppFs, "test2.json", []byte(jsonRegionalData), 0644)
+
+	jsonLocalData := `{
+		"LocalAppConfigs": {
+			"connectionString": "{{ .AppConfigs.replacementInfo }}.server.com",
+			"buildVersion": "production",
+			"buildNumber": 3
+			},
+		"Apps": {
+			"app1": {
+				"connectionString": "app1Value.server.com",
+				"buildVersion": "productionApp1",
+				"buildNumber": 4,
+				"specificConfig": {
+					"key": "value",
+					"key2": "value2"
+				}
+			},
+			"app2": {
+				"buildVersion": "productionApp2",
+				"buildNumber": 5
+			}
+		}
+	}`
+	_ = afero.WriteFile(AppFs, "test3.json", []byte(jsonLocalData), 0644)
+
+	jsonDeploymentData := `{
+		"DeploymentConfigs": {
+			"cluster": "clusterValue",
+			"region": "regionValue",
+			"client": "clientValue"
+		}
+	}`
+	_ = afero.WriteFile(AppFs, "test4.json", []byte(jsonDeploymentData), 0644)
+
+	config := ConfigurationMap{
+		Configs: []Config{
+			{
+				Path: "test.json",
+				Mappings: []Mapping{
+					{
+						InPath: "GlobalAppConfigs",
+						ToPath: "AppConfigs",
+					},
+				},
+				ApplyFile: "after",
+			},
+			{
+				Path: "test2.json",
+				Mappings: []Mapping{
+					{
+						InPath: "RegionalAppConfigs",
+						ToPath: "AppConfigs",
+					},
+					{
+						InPath: "Apps",
+						ToPath: "AppConfigs",
+					},
+				},
+				ApplyFile: "after",
+			},
+			{
+				Path: "test3.json",
+				Mappings: []Mapping{
+					{
+						InPath: "LocalAppConfigs",
+						ToPath: "AppConfigs",
+					},
+					{
+						InPath: "Apps",
+						ToPath: "AppConfigs",
+					},
+				},
+				ApplyFile: "after",
+			},
+			{
+				Path:      "test4.json",
+				Mappings:  []Mapping{},
+				ApplyFile: "after",
+			},
+		},
+	}
+
+	expectedMemoryMap := map[string]interface{}{
+		"AppConfigs": map[string]interface{}{
+			"connectionString": "yes.server.com",
+			"buildVersion":     "production",
+			"buildNumber":      3,
+			"replacementInfo":  "yes",
+			"app1": map[string]interface{}{
+				"connectionString": "app1Value.server.com",
+				"buildVersion":     "productionApp1",
+				"buildNumber":      4,
+				"specificConfig": map[string]interface{}{
+					"key":  "value",
+					"key2": "value2",
+					"key3": "value3",
+				},
+			},
+			"app2": map[string]interface{}{
+				"buildVersion": "productionApp2",
+				"buildNumber":  5,
+			},
+		},
+		"DeploymentConfigs": map[string]interface{}{
+			"cluster": "clusterValue",
+			"region":  "regionValue",
+			"client":  "clientValue",
+		},
+	}
+
+	memoryMap, _, err := ReadMemoryMap(&config)
+
+	assert.Nil(t, err)
+	assert.Equal(t, fmt.Sprint(expectedMemoryMap), fmt.Sprint(memoryMap)) // ints get turned into floats
+
+}
+
+func TestReadMemoryMap_DeepLinks(t *testing.T) {
+
+	AppFs = afero.NewMemMapFs()
+
+	jsonData1 := `{
+		"key": {
+			"key2": {
+				"key3": {
+					"key4": {
+						"key5": "value"
+					}
+				}
+			}
+		}
+	}`
+
+	_ = afero.WriteFile(AppFs, "test.json", []byte(jsonData1), 0644)
+
+	jsonData2 := `{
+		"key": {
+			"key2": {
+				"key3": "newValue"
+			}
+		}
+	}`
+
+	_ = afero.WriteFile(AppFs, "test2.json", []byte(jsonData2), 0644)
+
+	config := ConfigurationMap{
+		Configs: []Config{
+			{
+				Path:      "test.json",
+				Mappings:  []Mapping{},
+				ApplyFile: "after",
+			},
+			{
+				Path:      "test2.json",
+				Mappings:  []Mapping{},
+				ApplyFile: "after",
+			},
+		},
+	}
+
+	expectedMemoryMap := map[string]interface{}{
+		"key": map[string]interface{}{
+			"key2": map[string]interface{}{
+				"key3": "newValue",
+			},
+		},
+	}
+
+	memoryMap, traces, err := ReadMemoryMap(&config)
+
+	assert.Nil(t, err)
+	assert.Equal(t, fmt.Sprint(expectedMemoryMap), fmt.Sprint(memoryMap))
+	assert.Equal(t, 3, len(*traces))
+
+}
+
+func TestReadMemoryMap_DeepLinks_Replaces(t *testing.T) {
+
+	AppFs = afero.NewMemMapFs()
+
+	jsonData := `{
+		"key": "{{ .key2.key3 }}",
+		"key2": {
+			"key3": "{{ .key2.key4 }}",
+			"key4": "key5"
+		}
+	}`
+
+	_ = afero.WriteFile(AppFs, "test.json", []byte(jsonData), 0644)
+
+	config := ConfigurationMap{
+		Configs: []Config{
+			{
+				Path:      "test.json",
+				Mappings:  []Mapping{},
+				ApplyFile: "after",
+			},
+		},
+	}
+
+	expectedMemoryMap := map[string]interface{}{
+		"key": "key5",
+		"key2": map[string]interface{}{
+			"key3": "key5",
+			"key4": "key5",
+		},
+	}
+
+	memoryMap, _, err := ReadMemoryMap(&config)
+
+	assert.Nil(t, err)
+	assert.Equal(t, fmt.Sprint(expectedMemoryMap), fmt.Sprint(memoryMap))
+
+}
+
+func TestReadMemoryMap_10Replaces(t *testing.T) {
+
+	AppFs = afero.NewMemMapFs()
+
+	jsonData := `{
+		"key": "{{ .key2 }}",
+		"key2": "{{ .key3 }}",
+		"key3": "{{ .key4 }}",
+		"key4": "{{ .key5 }}",
+		"key5": "{{ .key6 }}",
+		"key6": "{{ .key7 }}",
+		"key7": "{{ .key8 }}",
+		"key8": "{{ .key9 }}",
+		"key9": "{{ .key10 }}",
+		"key10": "value"
+	}`
+	_ = afero.WriteFile(AppFs, "test.json", []byte(jsonData), 0644)
+
+	config := ConfigurationMap{
+		Configs: []Config{
+			{
+				Path:      "test.json",
+				Mappings:  []Mapping{},
+				ApplyFile: "after",
+			},
+		},
+	}
+
+	expectedMemoryMap := map[string]interface{}{
+		"key":   "value",
+		"key2":  "value",
+		"key3":  "value",
+		"key4":  "value",
+		"key5":  "value",
+		"key6":  "value",
+		"key7":  "value",
+		"key8":  "value",
+		"key9":  "value",
+		"key10": "value",
+	}
+
+	memoryMap, traces, err := ReadMemoryMap(&config)
+
+	assert.Nil(t, err)
+	assert.Equal(t, fmt.Sprint(expectedMemoryMap), fmt.Sprint(memoryMap))
+	//templating is very inefficient and needs to be run over and over
+	assert.Equal(t, 35, len(*traces))
+}
+
+func TestReadMemoryMap_Traces(t *testing.T) {
+
+	AppFs = afero.NewMemMapFs()
+
+	jsonData := `{
+		"key": "value"
+	}`
+
+	_ = afero.WriteFile(AppFs, "test.json", []byte(jsonData), 0644)
+
+	config := ConfigurationMap{
+		Configs: []Config{
+			{
+				Path:      "test.json",
+				Mappings:  []Mapping{},
+				ApplyFile: "after",
+			},
+		},
+	}
+
+	_, traces, err := ReadMemoryMap(&config)
+
+	_ = traces
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(*traces))
 
 }

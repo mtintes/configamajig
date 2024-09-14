@@ -10,10 +10,7 @@ import (
 
 func ReadMemoryMap(configurationMap *ConfigurationMap) (map[string]interface{}, *[]Trace, error) {
 
-	//traceOn := true
 	var traces []Trace
-
-	fmt.Println("---------------")
 
 	var masterMemoryMap = make(map[string]interface{})
 	storedFiles := make([]StoredMemoryMap, 0)
@@ -21,8 +18,6 @@ func ReadMemoryMap(configurationMap *ConfigurationMap) (map[string]interface{}, 
 	for _, config := range configurationMap.Configs {
 		mapLengthCount += len(config.Mappings) + 1
 	}
-
-	// fmt.Println(configurationMap.Configs[0])
 
 	for _, config := range configurationMap.Configs {
 
@@ -48,38 +43,36 @@ func ReadMemoryMap(configurationMap *ConfigurationMap) (map[string]interface{}, 
 			return nil, &traces, err
 		}
 
-		//fmt.Println(file)
-
 		flatFile, err := flat.Flatten(file.(map[string]interface{}), nil)
 
 		if err != nil {
 			return nil, &traces, err
 		}
-		fmt.Println("filePath:", filePath)
+
 		if config.ApplyFile == "before" {
-			masterMemoryMap = applyFlatFile(flatFile, masterMemoryMap)
+			masterMemoryMap, traces = applyFlatFile(flatFile, masterMemoryMap, traces)
 			masterMemoryMap, flatFile, traces = applyMappings(flatFile, config.Mappings, masterMemoryMap, traces)
 		} else if config.ApplyFile == "later" {
-			for key, value := range flatFile {
-				masterMemoryMap[key] = value
-			}
+			masterMemoryMap, flatFile, traces = applyMappings(flatFile, config.Mappings, masterMemoryMap, traces)
 		} else {
 			masterMemoryMap, flatFile, traces = applyMappings(flatFile, config.Mappings, masterMemoryMap, traces)
-			masterMemoryMap = applyFlatFile(flatFile, masterMemoryMap)
+			masterMemoryMap, traces = applyFlatFile(flatFile, masterMemoryMap, traces)
 		}
 		storedFiles = append(storedFiles, StoredMemoryMap{File: flatFile, FileName: filePath})
 	}
 
-	fmt.Println("Before:", masterMemoryMap["newKey"])
+	masterMemoryMap, traces, err := templateMemoryMap(masterMemoryMap, traces)
+
+	if err != nil {
+		return nil, &traces, err
+	}
+
 	unflatten, err := flat.Unflatten(masterMemoryMap, nil)
 
 	if err != nil {
 		return nil, &traces, err
 	}
 
-	fmt.Println("After", unflatten["newKey"])
-
-	fmt.Println("---------------")
 	return unflatten, &traces, nil
 }
 
@@ -113,18 +106,17 @@ func applyMappings(flatFile map[string]interface{}, mappings []Mapping, masterMe
 
 	for _, mapping := range mappings {
 		for key, value := range flatFile {
-			fmt.Println("Value:", value)
 
-			//if key has partial match
 			if strings.HasPrefix(key, mapping.InPath+".") || key == mapping.InPath {
 				keySuffix := key[len(mapping.InPath):]
 				for memKey := range masterMemoryMap {
 					if strings.HasPrefix(memKey, mapping.ToPath) && keySuffix == "" {
-						traces = append(traces, Trace{key: memKey, value: masterMemoryMap[memKey], changeType: "delete"})
+						traces = append(traces, Trace{key: memKey, oldValue: masterMemoryMap[memKey], changeType: "delete"})
 						delete(masterMemoryMap, memKey)
 					}
 				}
-				traces = append(traces, Trace{key: mapping.ToPath + keySuffix, value: value, changeType: "update"})
+				traces = append(traces, createTrace(masterMemoryMap, mapping.ToPath+keySuffix, value))
+
 				masterMemoryMap[mapping.ToPath+keySuffix] = value
 				delete(newFlatFile, key)
 			}
@@ -133,16 +125,19 @@ func applyMappings(flatFile map[string]interface{}, mappings []Mapping, masterMe
 	return masterMemoryMap, newFlatFile, traces
 }
 
-func applyFlatFile(flatFile map[string]interface{}, masterMemoryMap map[string]interface{}) map[string]interface{} {
+func applyFlatFile(flatFile map[string]interface{}, masterMemoryMap map[string]interface{}, traces []Trace) (map[string]interface{}, []Trace) {
 	for key, value := range flatFile {
 		for memKey := range masterMemoryMap {
 			if strings.HasPrefix(memKey, key+".") || memKey == key {
+				traces = append(traces, Trace{key: memKey, value: masterMemoryMap[memKey], changeType: "delete"})
 				delete(masterMemoryMap, memKey)
 			}
 		}
+		traces = append(traces, createTrace(masterMemoryMap, key, value))
+
 		masterMemoryMap[key] = value
 	}
-	return masterMemoryMap
+	return masterMemoryMap, traces
 }
 
 type StoredMemoryMap struct {
@@ -153,6 +148,7 @@ type StoredMemoryMap struct {
 type Trace struct {
 	key        string
 	value      interface{}
+	oldValue   interface{}
 	changeType string
 }
 
@@ -163,7 +159,11 @@ func TracesToString(traces *[]Trace) string {
 		result += " "
 		result += trace.key
 		result += " "
-		result += fmt.Sprint(trace.value)
+		result += fmt.Sprint("Value: ", trace.value)
+		if trace.oldValue != nil {
+			result += " "
+			result += fmt.Sprint("Old Value: ", trace.oldValue)
+		}
 		result += "\n"
 	}
 	return result
@@ -192,8 +192,33 @@ func Unflatten(flat map[string]interface{}) (map[string]interface{}, error) {
 
 func createTrace(masterMemoryMap map[string]interface{}, key string, value interface{}) Trace {
 	if _, ok := masterMemoryMap[key]; ok {
-		return Trace{key: key, value: value, changeType: "update"}
+		return Trace{key: key, value: value, oldValue: masterMemoryMap[key], changeType: "update"}
 	} else {
 		return Trace{key: key, value: value, changeType: "create"}
 	}
+}
+
+func templateMemoryMap(flatFile map[string]interface{}, traces []Trace) (map[string]interface{}, []Trace, error) {
+
+	for i := 0; i < 10; i++ {
+		unflattenedFile, err := flat.Unflatten(flatFile, nil)
+
+		if err != nil {
+			return nil, traces, err
+		}
+
+		for key, value := range flatFile {
+			if value, ok := value.(string); ok {
+				oldValue := value
+				flatFile[key], err = RunTemplate([]byte(value), unflattenedFile)
+				if oldValue != flatFile[key] {
+					traces = append(traces, Trace{key: key, value: flatFile[key], oldValue: oldValue, changeType: "template"})
+				}
+				if err != nil {
+					return nil, traces, err
+				}
+			}
+		}
+	}
+	return flatFile, traces, nil
 }

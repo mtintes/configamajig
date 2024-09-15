@@ -1,4 +1,4 @@
-module github.com/mtintes/configamajig
+module github.com/mtintes/configamajig/cli
 
 go 1.22.5
 

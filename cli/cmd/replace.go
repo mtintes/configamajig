@@ -4,7 +4,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"github.com/mtintes/configamajig/cli/actions"
+	"github.com/mtintes/configamajig/actions"
 	"github.com/spf13/cobra"
 )
 

@@ -3,7 +3,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 */
 package main
 
-import "github.com/mtintes/configamajig/cli/cmd"
+import "github.com/mtintes/configamajig/cmd"
 
 var version string
 var commit string

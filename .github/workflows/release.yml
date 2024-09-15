@@ -13,7 +13,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
+    - name: Install GoReleaser
+      uses: goreleaser/goreleaser-action@v6
+      with:
+        install-only: true
+
+    - name: check release file
+      run: goreleaser check
+      
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
@@ -27,8 +34,7 @@ jobs:
         go test -v ./...
 
     - name: Run GoReleaser
-      uses: goreleaser/goreleaser-action@v6
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        goreleaser release
 
       

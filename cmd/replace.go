@@ -4,9 +4,6 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-	"math/rand/v2"
-
 	"github.com/mtintes/configamajig/actions"
 	"github.com/spf13/cobra"
 )
@@ -22,54 +19,14 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("replace called")
 		configMap := cmd.Flag("config").Value.String()
-		configurationMap, err := actions.ReadConfigurationMap(configMap)
 
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		fmt.Println(configurationMap)
-
-		memoryMap, traces, err := actions.ReadMemoryMap(configurationMap)
-
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-
-		random := rand.IntN(1000)
-		actions.WriteFile(fmt.Sprintf("traces/trace_%d.json", random), actions.TracesToString(traces))
-
-		// templatedMemoryMap, err := actions.TemplateMemoryMap(memoryMap.(map[string]interface{}))
-
-		// if err != nil {
-		// 	fmt.Println(err)
-		// 	return
-		// }
+		traceFileOutput := cmd.Flag("memoryTraceOut").Value.String()
 
 		inputPath := cmd.Flag("input").Value.String()
-		inputFile, err := actions.SlurpGenericFile(inputPath)
-
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-
-		file, err := actions.RunTemplate(inputFile, memoryMap)
-
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
 
 		outputPath := cmd.Flag("output").Value.String()
-		err = actions.WriteFile(outputPath, file)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
+		actions.ReplaceCmd(configMap, inputPath, outputPath, traceFileOutput)
 	},
 }
 
@@ -79,5 +36,10 @@ func init() {
 	replaceCmd.Flags().StringP("config", "c", "", "config file defines the mapping of the variables (order, depth, etc.)")
 	replaceCmd.Flags().StringP("input", "i", "", "input file to be replaced")
 	replaceCmd.Flags().StringP("output", "o", "", "output file to be written")
+	replaceCmd.Flags().StringP("memoryTraceOut", "t", "", "changes made during memory map setup")
+
+	replaceCmd.MarkFlagRequired("config")
+	replaceCmd.MarkFlagRequired("input")
+	replaceCmd.MarkFlagRequired("output")
 
 }

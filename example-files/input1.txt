@@ -5,3 +5,5 @@ thinglocal: {{ .deepValues.deepvalue1.thing }}
 thingglobal2: {{ .deepValues.deepvalue2.thing }}
 
 someOtherGlobalConfigs: {{ .globals.someOtherGlobalConfigs }}
+
+someLocalConnectionString: {{ .someOtherThings.thing1}}

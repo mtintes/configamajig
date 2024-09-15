@@ -24,6 +24,7 @@ jobs:
     - name: Build & Test
       run: |
         cd cli
+        go mod tidy
         go build -v ./...
         go test -v ./...
 

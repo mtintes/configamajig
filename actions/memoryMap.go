@@ -14,10 +14,6 @@ func ReadMemoryMap(configurationMap *ConfigurationMap) (map[string]interface{}, 
 
 	var masterMemoryMap = make(map[string]interface{})
 	storedFiles := make([]StoredMemoryMap, 0)
-	mapLengthCount := 0
-	for _, config := range configurationMap.Configs {
-		mapLengthCount += len(config.Mappings) + 1
-	}
 
 	for _, config := range configurationMap.Configs {
 

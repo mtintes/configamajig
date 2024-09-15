@@ -2,6 +2,7 @@ package actions
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/spf13/afero"
 )
@@ -23,13 +24,13 @@ type Mapping struct {
 }
 
 func ReadConfigurationMap(input string) (*ConfigurationMap, error) {
-	version, err := findVersion(input)
+	version, _ := findVersion(input)
 
 	switch version {
 	case "1.0.0":
 		return readVersion1(input)
 	default:
-		return nil, err
+		return nil, errors.New("config file version not supported")
 	}
 }
 

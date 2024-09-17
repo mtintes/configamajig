@@ -9,8 +9,8 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${workspaceFolder}",
-            "args": ["replace", "--config", "example-files/config.json", "--output", "example-files/output.txt", "--input", "example-files/input1.txt"],
+            "program": "${workspaceFolder}/cli",
+            "args": ["replace", "--config", "../example-files/launchExamples/config.json", "--output", "../example-files/launchExamples/output.txt", "--input", "../example-files/launchExamples/input1.txt", "-t", "../example-files/launchExamples/trace.html"],
         },
     ]
 }

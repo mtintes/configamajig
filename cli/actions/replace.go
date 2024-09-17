@@ -17,8 +17,18 @@ func ReplaceCmd(configMap string, inputPath string, outputPath string, traceFile
 		return
 	}
 
-	WriteFile(traceFileOutput, TracesToString(traces))
+	if traceFileOutput != "" {
+		traceOutputType := findFileType(traceFileOutput)
 
+		table, err := traceToTable(traces, configurationMap.Configs, traceOutputType)
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		WriteFile(traceFileOutput, table)
+	}
 	inputFile, err := SlurpGenericFile(inputPath)
 
 	if err != nil {

@@ -1,0 +1,10 @@
+{
+    "deployConfigs": {
+        "stage": "development"
+    },
+    "appConfigs": {
+        "app1": {
+            "dbConfigs": "someApp1DevConnectionString"
+        }
+    }
+}

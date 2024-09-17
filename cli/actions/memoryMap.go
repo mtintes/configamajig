@@ -2,7 +2,6 @@ package actions
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/nqd/flat"
@@ -46,13 +45,13 @@ func ReadMemoryMap(configurationMap *ConfigurationMap) (map[string]interface{}, 
 		}
 
 		if config.ApplyFile == "before" {
-			masterMemoryMap, traces = applyFlatFile(flatFile, masterMemoryMap, traces)
-			masterMemoryMap, flatFile, traces = applyMappings(flatFile, config.Mappings, masterMemoryMap, traces)
+			masterMemoryMap, traces = applyFlatFile(flatFile, masterMemoryMap, traces, filePath)
+			masterMemoryMap, flatFile, traces = applyMappings(flatFile, config.Mappings, masterMemoryMap, traces, filePath)
 		} else if config.ApplyFile == "later" {
-			masterMemoryMap, flatFile, traces = applyMappings(flatFile, config.Mappings, masterMemoryMap, traces)
+			masterMemoryMap, flatFile, traces = applyMappings(flatFile, config.Mappings, masterMemoryMap, traces, filePath)
 		} else {
-			masterMemoryMap, flatFile, traces = applyMappings(flatFile, config.Mappings, masterMemoryMap, traces)
-			masterMemoryMap, traces = applyFlatFile(flatFile, masterMemoryMap, traces)
+			masterMemoryMap, flatFile, traces = applyMappings(flatFile, config.Mappings, masterMemoryMap, traces, filePath)
+			masterMemoryMap, traces = applyFlatFile(flatFile, masterMemoryMap, traces, filePath)
 		}
 		storedFiles = append(storedFiles, StoredMemoryMap{File: flatFile, FileName: filePath})
 	}
@@ -73,7 +72,8 @@ func ReadMemoryMap(configurationMap *ConfigurationMap) (map[string]interface{}, 
 }
 
 func findFileType(filePath string) string {
-	return filePath[len(filePath)-4:]
+	extension := strings.Split(filePath, ".")
+	return extension[len(extension)-1]
 }
 
 func SafePropertyCheck(obj interface{}, key string) bool {
@@ -97,23 +97,23 @@ func returnStoredFile(storedFiles []StoredMemoryMap, fileName string) interface{
 	return nil
 }
 
-func applyMappings(flatFile map[string]interface{}, mappings []Mapping, masterMemoryMap map[string]interface{}, traces []Trace) (map[string]interface{}, map[string]interface{}, []Trace) {
+func applyMappings(flatFile map[string]interface{}, mappings []Mapping, masterMemoryMap map[string]interface{}, traces []Trace, filePath string) (map[string]interface{}, map[string]interface{}, []Trace) {
 	newFlatFile := flatFile
 
 	for _, mapping := range mappings {
 		for key, value := range flatFile {
-
 			if strings.HasPrefix(key, mapping.InPath+".") || key == mapping.InPath {
 				keySuffix := key[len(mapping.InPath):]
+				newKey := mapping.ToPath + keySuffix
 				for memKey := range masterMemoryMap {
-					if strings.HasPrefix(memKey, mapping.ToPath) && keySuffix == "" {
-						traces = append(traces, Trace{key: memKey, oldValue: masterMemoryMap[memKey], changeType: "delete"})
+					if strings.HasPrefix(memKey, newKey+".") || strings.HasPrefix(newKey, memKey+".") {
+						traces = append(traces, Trace{key: memKey, oldValue: masterMemoryMap[memKey], changeType: "delete", file: filePath})
 						delete(masterMemoryMap, memKey)
 					}
 				}
-				traces = append(traces, createTrace(masterMemoryMap, mapping.ToPath+keySuffix, value))
+				traces = append(traces, createTrace(masterMemoryMap, newKey, value, filePath))
 
-				masterMemoryMap[mapping.ToPath+keySuffix] = value
+				masterMemoryMap[newKey] = value
 				delete(newFlatFile, key)
 			}
 		}
@@ -121,15 +121,15 @@ func applyMappings(flatFile map[string]interface{}, mappings []Mapping, masterMe
 	return masterMemoryMap, newFlatFile, traces
 }
 
-func applyFlatFile(flatFile map[string]interface{}, masterMemoryMap map[string]interface{}, traces []Trace) (map[string]interface{}, []Trace) {
+func applyFlatFile(flatFile map[string]interface{}, masterMemoryMap map[string]interface{}, traces []Trace, filePath string) (map[string]interface{}, []Trace) {
 	for key, value := range flatFile {
 		for memKey := range masterMemoryMap {
-			if strings.HasPrefix(memKey, key+".") || memKey == key {
-				traces = append(traces, Trace{key: memKey, value: masterMemoryMap[memKey], changeType: "delete"})
+			if strings.HasPrefix(memKey, key+".") || strings.HasPrefix(key, memKey+".") {
+				traces = append(traces, Trace{key: memKey, value: masterMemoryMap[memKey], changeType: "delete", file: filePath})
 				delete(masterMemoryMap, memKey)
 			}
 		}
-		traces = append(traces, createTrace(masterMemoryMap, key, value))
+		traces = append(traces, createTrace(masterMemoryMap, key, value, filePath))
 
 		masterMemoryMap[key] = value
 	}
@@ -139,30 +139,6 @@ func applyFlatFile(flatFile map[string]interface{}, masterMemoryMap map[string]i
 type StoredMemoryMap struct {
 	File     map[string]interface{}
 	FileName string
-}
-
-type Trace struct {
-	key        string
-	value      interface{}
-	oldValue   interface{}
-	changeType string
-}
-
-func TracesToString(traces *[]Trace) string {
-	var result string
-	for _, trace := range *traces {
-		result += trace.changeType
-		result += " "
-		result += trace.key
-		result += " "
-		result += fmt.Sprint("Value: ", trace.value)
-		if trace.oldValue != nil {
-			result += " "
-			result += fmt.Sprint("Old Value: ", trace.oldValue)
-		}
-		result += "\n"
-	}
-	return result
 }
 
 func Unflatten(flat map[string]interface{}) (map[string]interface{}, error) {
@@ -186,11 +162,11 @@ func Unflatten(flat map[string]interface{}) (map[string]interface{}, error) {
 	return response, nil
 }
 
-func createTrace(masterMemoryMap map[string]interface{}, key string, value interface{}) Trace {
+func createTrace(masterMemoryMap map[string]interface{}, key string, value interface{}, filePath string) Trace {
 	if _, ok := masterMemoryMap[key]; ok {
-		return Trace{key: key, value: value, oldValue: masterMemoryMap[key], changeType: "update"}
+		return Trace{key: key, value: value, oldValue: masterMemoryMap[key], changeType: "update", file: filePath}
 	} else {
-		return Trace{key: key, value: value, changeType: "create"}
+		return Trace{key: key, value: value, changeType: "create", file: filePath}
 	}
 }
 

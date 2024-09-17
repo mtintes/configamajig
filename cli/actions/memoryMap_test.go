@@ -28,7 +28,7 @@ func TestMappings(t *testing.T) {
 	}
 
 	traces := []Trace{}
-	masterMemoryMap, flatFile, _ = applyMappings(flatFile, mappings, masterMemoryMap, traces)
+	masterMemoryMap, flatFile, _ = applyMappings(flatFile, mappings, masterMemoryMap, traces, "test.json")
 
 	assert.Equal(t, false, SafePropertyCheck(masterMemoryMap, "key"))
 	assert.Equal(t, false, SafePropertyCheck(masterMemoryMap, "key2"))

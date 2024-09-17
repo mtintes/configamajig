@@ -17,6 +17,8 @@ func ReplaceCmd(configMap string, inputPath string, outputPath string, traceFile
 		return
 	}
 
+	traceToTable(traces, configurationMap.Configs)
+
 	WriteFile(traceFileOutput, TracesToString(traces))
 
 	inputFile, err := SlurpGenericFile(inputPath)

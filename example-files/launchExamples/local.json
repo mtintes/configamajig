@@ -1,0 +1,25 @@
+{
+    "globalAppConfigs":{
+        "dbConfigs": "someLocalConnectionString",
+        "someAPIKey": "someAPIKey"
+    },
+    "deploymentConfigs":{
+        "stage": "production",
+        "someOtherConfigs": "someOtherConfigs"
+    },
+    "input1": {
+        "file": "file",
+        "text": "text"
+    },
+    "deepValues":{
+        "deepvalue1":{
+            "thing": "thinglocal"
+        }
+    },
+    "deleteMe": {
+        "thing": "thing"
+    },
+    "deleteStandby": {
+        "thing": "thing"
+    }
+}

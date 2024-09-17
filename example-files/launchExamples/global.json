@@ -1,0 +1,29 @@
+{
+    "globalAppConfigs":{
+        "dbConfigs": "someGlobalConnectionString",
+        "someAPIKey": "someAPIKey",
+        "someOtherGlobalConfigs": "someOtherGlobalConfigs"
+    },
+    "deploymentConfigs":{
+        "stage": "development",
+        "someOtherConfigs": "someOtherConfigs"
+    },
+    "someOtherThings": {
+        "thing1": "{{ .globals.dbConfigs }}",
+        "thing2": "thing2"
+    },
+    "deepValues":{
+        "deepvalue1":{
+            "thing": "thingglobal"
+        },
+        "deepvalue2":{
+            "thing": "thingglobal2"
+        }
+    },
+    "deleteMe": {
+        "thing": "thing"
+    },
+    "deleteStandby": {
+        "thing": "thing"
+    }
+}

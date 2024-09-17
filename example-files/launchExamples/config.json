@@ -1,0 +1,68 @@
+{
+    "configs": [
+        {
+            "path": "../example-files/launchExamples/global.json",
+            "mappings": [
+                {
+                    "inPath": "globalAppConfigs",
+                    "toPath": "globals"
+                },
+                {
+                    "inPath": "deploymentConfigs",
+                    "toPath": "deploymentValues"
+                },
+                {
+                    "inPath": "deleteStandby",
+                    "toPath": "deleteMe2"
+                }
+            ],
+            "applyFile": "after"
+        },
+        {
+            "path": "../example-files/launchExamples/regional.json",
+            "mappings": [
+                {
+                    "inPath": "globalAppConfigs",
+                    "toPath": "globals"
+                },
+                {
+                    "inPath": "deploymentConfigs",
+                    "toPath": "deploymentValues"
+                }
+            ],
+            "applyFile": "later"
+        },
+        {
+            "path": "../example-files/launchExamples/integration.json",
+            "mappings": [
+                {
+                    "inPath": "deploymentConfigs",
+                    "toPath": "deploymentValues"
+                },
+                {
+                    "inPath": "deleteStandby",
+                    "toPath": "deleteMe2"
+                }
+            ],
+            "applyFile": "before"
+        },
+        {
+            "path": "../example-files/launchExamples/local.json",
+            "mappings": [
+                {
+                    "inPath": "globalAppConfigs",
+                    "toPath": "globals"
+                },
+                {
+                    "inPath": "deploymentConfigs",
+                    "toPath": "deploymentValues"
+                },
+                {
+                    "inPath": "deleteStandby",
+                    "toPath": "deleteMe2"
+                }
+            ]
+        }
+    ],
+    "version": "1.0.0"
+}

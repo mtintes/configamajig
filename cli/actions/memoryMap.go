@@ -72,7 +72,8 @@ func ReadMemoryMap(configurationMap *ConfigurationMap) (map[string]interface{}, 
 }
 
 func findFileType(filePath string) string {
-	return filePath[len(filePath)-4:]
+	extension := strings.Split(filePath, ".")
+	return extension[len(extension)-1]
 }
 
 func SafePropertyCheck(obj interface{}, key string) bool {

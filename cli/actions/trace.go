@@ -1,11 +1,12 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
-	"os"
 	"slices"
 
 	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/jedib0t/go-pretty/v6/text"
 )
 
 type Trace struct {
@@ -35,12 +36,12 @@ func TracesToString(traces *[]Trace) string {
 	return result
 }
 
-func traceToTable(traces *[]Trace, configs []Config) {
+func traceToTable(traces *[]Trace, configs []Config, fileType string) (string, error) {
 
 	columns := []string{}
 	t := table.NewWriter()
-	t.SetOutputMirror(os.Stdout)
-	header := table.Row{"#"}
+	// t.SetOutputMirror(os.Stdout)
+	header := table.Row{""}
 	for _, config := range configs {
 		header = append(header, config.Path)
 		columns = append(columns, config.Path)
@@ -54,8 +55,26 @@ func traceToTable(traces *[]Trace, configs []Config) {
 	sortedKeys = slices.Compact(sortedKeys)
 	info := buildTableInfo(traces, columns, sortedKeys)
 	buildTableBody(info, columns, t, sortedKeys)
+	t.SetStyle(table.Style{
+		Name: "trace",
+		Color: table.ColorOptions{
+			Row:          text.Colors{text.BgHiCyan, text.BgBlack},
+			RowAlternate: text.Colors{text.BgCyan, text.FgBlack}},
+	})
 
-	t.Render()
+	switch fileType {
+	case "md":
+		return t.RenderMarkdown(), nil
+	case "html":
+		return t.RenderHTML(), nil
+	case "csv":
+		return t.RenderCSV(), nil
+	case "txt":
+		return t.Render(), nil
+	default:
+		return t.Render(), errors.New("file type not supported for trace output (supported types: .md, .html, .csv, .txt)")
+	}
+
 }
 
 func buildTableInfo(traces *[]Trace, columns []string, keys []string) Table {
@@ -98,6 +117,10 @@ func buildTableBody(info Table, columns []string, t table.Writer, keys []string)
 		for _, column := range columns {
 			if row.Columns[column].crud == "delete" {
 				rowData = append(rowData, "(deleted)")
+				continue
+			}
+			if row.Columns[column].value == nil {
+				rowData = append(rowData, "")
 				continue
 			}
 			rowData = append(rowData, row.Columns[column].value)

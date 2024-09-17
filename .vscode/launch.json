@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "debug",
             "program": "${workspaceFolder}/cli",
-            "args": ["replace", "--config", "../example-files/launchExamples/config.json", "--output", "../example-files/launchExamples/output.txt", "--input", "../example-files/launchExamples/input1.txt", "-t", "../example-files/launchExamples/trace.txt"],
+            "args": ["replace", "--config", "../example-files/launchExamples/config.json", "--output", "../example-files/launchExamples/output.txt", "--input", "../example-files/launchExamples/input1.txt", "-t", "../example-files/launchExamples/trace.html"],
         },
     ]
 }

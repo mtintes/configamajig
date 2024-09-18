@@ -11,13 +11,8 @@ import (
 // replaceCmd represents the replace command
 var replaceCmd = &cobra.Command{
 	Use:   "replace",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Replaces the variables in the input file using a config file",
+	Long:  `This is for replacing the variables in the input file using a config file.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		configMap := cmd.Flag("config").Value.String()
 

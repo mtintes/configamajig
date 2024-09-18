@@ -2,6 +2,7 @@ package actions
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/nqd/flat"
@@ -14,7 +15,7 @@ func ReadMemoryMap(configurationMap *ConfigurationMap) (map[string]interface{}, 
 	var masterMemoryMap = make(map[string]interface{})
 	storedFiles := make([]StoredMemoryMap, 0)
 
-	for _, config := range configurationMap.Configs {
+	for order, config := range configurationMap.Configs {
 
 		filePath := config.Path
 		fileType := findFileType(filePath)
@@ -45,13 +46,13 @@ func ReadMemoryMap(configurationMap *ConfigurationMap) (map[string]interface{}, 
 		}
 
 		if config.ApplyFile == "before" {
-			masterMemoryMap, traces = applyFlatFile(flatFile, masterMemoryMap, traces, filePath)
-			masterMemoryMap, flatFile, traces = applyMappings(flatFile, config.Mappings, masterMemoryMap, traces, filePath)
+			masterMemoryMap, traces = applyFlatFile(flatFile, masterMemoryMap, traces, fmt.Sprintf("%s-%d", filePath, order))
+			masterMemoryMap, flatFile, traces = applyMappings(flatFile, config.Mappings, masterMemoryMap, traces, fmt.Sprintf("%s-%d", filePath, order))
 		} else if config.ApplyFile == "later" {
-			masterMemoryMap, flatFile, traces = applyMappings(flatFile, config.Mappings, masterMemoryMap, traces, filePath)
+			masterMemoryMap, flatFile, traces = applyMappings(flatFile, config.Mappings, masterMemoryMap, traces, fmt.Sprintf("%s-%d", filePath, order))
 		} else {
-			masterMemoryMap, flatFile, traces = applyMappings(flatFile, config.Mappings, masterMemoryMap, traces, filePath)
-			masterMemoryMap, traces = applyFlatFile(flatFile, masterMemoryMap, traces, filePath)
+			masterMemoryMap, flatFile, traces = applyMappings(flatFile, config.Mappings, masterMemoryMap, traces, fmt.Sprintf("%s-%d", filePath, order))
+			masterMemoryMap, traces = applyFlatFile(flatFile, masterMemoryMap, traces, fmt.Sprintf("%s-%d", filePath, order))
 		}
 		storedFiles = append(storedFiles, StoredMemoryMap{File: flatFile, FileName: filePath})
 	}

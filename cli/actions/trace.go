@@ -36,7 +36,7 @@ func TracesToString(traces *[]Trace) string {
 	return result
 }
 
-func traceToTable(traces *[]Trace, configs []Config, fileType string) (string, error) {
+func traceToTable(traces *[]Trace, configs []Config, fileType string, memoryMap map[string]interface{}) (string, error) {
 
 	columns := []string{}
 	t := table.NewWriter()
@@ -47,13 +47,18 @@ func traceToTable(traces *[]Trace, configs []Config, fileType string) (string, e
 		columns = append(columns, fmt.Sprintf("%s-%d", config.Path, order))
 	}
 
+	header = append(header, "PreTemplate")
+	header = append(header, "PostTemplate")
+	columns = append(columns, "PreTemplate")
+	columns = append(columns, "PostTemplate")
+
 	t.AppendHeader(header)
 	keys := findKeys(traces)
 	sortedKeys := make([]string, len(keys))
 	copy(sortedKeys, keys)
 	slices.Sort(sortedKeys)
 	sortedKeys = slices.Compact(sortedKeys)
-	info := buildTableInfo(traces, columns, sortedKeys)
+	info := buildTableInfo(traces, columns, sortedKeys, memoryMap)
 	buildTableBody(info, columns, t, sortedKeys)
 	t.SetStyle(table.Style{
 		Name: "trace",
@@ -77,28 +82,31 @@ func traceToTable(traces *[]Trace, configs []Config, fileType string) (string, e
 
 }
 
-func buildTableInfo(traces *[]Trace, columns []string, keys []string) Table {
+func buildTableInfo(traces *[]Trace, columns []string, keys []string, memoryMap map[string]interface{}) Table {
 
 	rows := make(map[string]Row)
 	for _, key := range keys {
-		rows[key] = buildRowInfo(traces, columns, key)
+		rows[key] = buildRowInfo(traces, columns, key, memoryMap[key])
 	}
 
 	return Table{Rows: rows}
 
 }
 
-func buildRowInfo(traces *[]Trace, columns []string, key string) Row {
+func buildRowInfo(traces *[]Trace, columns []string, key string, finalValue interface{}) Row {
 	row := Row{Columns: make(map[string]Metadata)}
+
 	for _, trace := range *traces {
 		if trace.key == key {
 			for _, column := range columns {
 				if trace.file == column {
 					row.Columns[column] = Metadata{value: trace.value, crud: trace.changeType}
+					row.Columns["PreTemplate"] = Metadata{value: trace.value, crud: "none"}
 				}
 			}
 		}
 	}
+	row.Columns["PostTemplate"] = Metadata{value: finalValue, crud: "none"}
 	return row
 }
 

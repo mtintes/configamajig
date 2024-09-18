@@ -36,6 +36,49 @@ func TracesToString(traces *[]Trace) string {
 	return result
 }
 
+func traceToTableForSingleKey(traces *[]Trace, configs []Config, fileType string, key string, finalValue interface{}) (string, error) {
+
+	columns := []string{}
+	t := table.NewWriter()
+	// t.SetOutputMirror(os.Stdout)
+	header := table.Row{""}
+	for order, config := range configs {
+		header = append(header, fmt.Sprintf("%s-%d", config.Path, order))
+		columns = append(columns, fmt.Sprintf("%s-%d", config.Path, order))
+	}
+
+	header = append(header, "PreTemplate")
+	header = append(header, "PostTemplate")
+	columns = append(columns, "PreTemplate")
+	columns = append(columns, "PostTemplate")
+
+	t.AppendHeader(header)
+
+	row := buildRowInfo(traces, columns, key, finalValue)
+	buildTableBody(Table{Rows: map[string]Row{key: row}}, columns, t, []string{key})
+
+	t.SetStyle(table.Style{
+		Name: "trace",
+		Color: table.ColorOptions{
+			Row:          text.Colors{text.BgHiCyan, text.BgBlack},
+			RowAlternate: text.Colors{text.BgCyan, text.FgBlack}},
+	})
+
+	switch fileType {
+	case "md":
+		return t.RenderMarkdown(), nil
+	case "html":
+		return t.RenderHTML(), nil
+	case "csv":
+		return t.RenderCSV(), nil
+	case "txt":
+		return t.Render(), nil
+	default:
+		return t.Render(), errors.New("file type not supported for trace output (supported types: .md, .html, .csv, .txt)")
+	}
+
+}
+
 func traceToTable(traces *[]Trace, configs []Config, fileType string, memoryMap map[string]interface{}) (string, error) {
 
 	columns := []string{}

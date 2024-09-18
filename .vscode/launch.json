@@ -10,7 +10,15 @@
             "request": "launch",
             "mode": "debug",
             "program": "${workspaceFolder}/cli",
-            "args": ["replace", "--config", "../example-files/launchExamples/config.json", "--output", "../example-files/launchExamples/output.txt", "--input", "../example-files/launchExamples/input1.txt", "-t", "../example-files/launchExamples/trace.html"],
+            "args": ["replace", "--config", "../example-files/launchExamples/config.json", "--output", "../example-files/launchExamples/output.txt", "--input", "../example-files/launchExamples/input1.txt", "-t", "../example-files/launchExamples/trace.md"],
+        },
+        {
+            "name": "read key",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cli",
+            "args": ["read", "key", "--config", "../example-files/launchExamples/config.json", "-t", "../example-files/launchExamples/trace.md", "-o","../example-files/launchExamples/output.yaml", "globals.dbConfigs"],
         },
     ]
 }

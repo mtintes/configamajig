@@ -42,9 +42,9 @@ func traceToTable(traces *[]Trace, configs []Config, fileType string) (string, e
 	t := table.NewWriter()
 	// t.SetOutputMirror(os.Stdout)
 	header := table.Row{""}
-	for _, config := range configs {
-		header = append(header, config.Path)
-		columns = append(columns, config.Path)
+	for order, config := range configs {
+		header = append(header, fmt.Sprintf("%s-%d", config.Path, order))
+		columns = append(columns, fmt.Sprintf("%s-%d", config.Path, order))
 	}
 
 	t.AppendHeader(header)

@@ -1,6 +1,10 @@
 package actions
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/nqd/flat"
+)
 
 func ReplaceCmd(configMap string, inputPath string, outputPath string, traceFileOutput string) {
 	configurationMap, err := ReadConfigurationMap(configMap)
@@ -19,8 +23,13 @@ func ReplaceCmd(configMap string, inputPath string, outputPath string, traceFile
 
 	if traceFileOutput != "" {
 		traceOutputType := findFileType(traceFileOutput)
+		flatMemoryMap, err := flat.Flatten(memoryMap, nil)
 
-		table, err := traceToTable(traces, configurationMap.Configs, traceOutputType)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		table, err := traceToTable(traces, configurationMap.Configs, traceOutputType, flatMemoryMap)
 
 		if err != nil {
 			fmt.Println(err)

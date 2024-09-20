@@ -184,6 +184,12 @@ func templateMemoryMap(flatFile map[string]interface{}, traces []Trace) (map[str
 			if value, ok := value.(string); ok {
 				oldValue := value
 				flatFile[key], err = RunTemplate([]byte(value), unflattenedFile)
+
+				if err != nil {
+					fmt.Printf("Error running template for key '%s' with value '%s'\nYou can find the issue by searching the trace file.", key, value)
+					return nil, traces, err
+				}
+
 				if oldValue != flatFile[key] {
 					traces = append(traces, Trace{key: key, value: flatFile[key], oldValue: oldValue, changeType: "template"})
 				}

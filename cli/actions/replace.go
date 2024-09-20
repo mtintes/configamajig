@@ -12,7 +12,6 @@ func ReplaceCmd(configurationMap *ConfigurationMap, inputPath string, outputPath
 
 	if err != nil {
 		fmt.Println(err)
-		return
 	}
 
 	if traceFileOutput != "" {
@@ -32,25 +31,28 @@ func ReplaceCmd(configurationMap *ConfigurationMap, inputPath string, outputPath
 
 		WriteFile(traceFileOutput, table)
 	}
-	inputFile, err := SlurpGenericFile(inputPath)
 
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	if err == nil {
+		inputFile, err := SlurpGenericFile(inputPath)
 
-	file, err := RunTemplate(inputFile, memoryMap)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+		file, err := RunTemplate(inputFile, memoryMap)
 
-	err = WriteFile(outputPath, file)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 
-	if err != nil {
-		fmt.Println(err)
-		return
+		err = WriteFile(outputPath, file)
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 	}
 
 }

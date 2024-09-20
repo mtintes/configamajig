@@ -1,9 +1,0 @@
-I am a {{ .input1.file }} and I have some {{ .input1.text }}.
-I am a file and I have some text.
-
-thinglocal: {{ .deepValues.deepvalue1.thing }}
-thingglobal2: {{ .deepValues.deepvalue2.thing }}
-
-someOtherGlobalConfigs: {{ .globals.someOtherGlobalConfigs }}
-
-someLocalConnectionString: {{ .someOtherThings.thing1 }}

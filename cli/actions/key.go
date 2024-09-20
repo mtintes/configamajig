@@ -7,12 +7,7 @@ import (
 	"github.com/nqd/flat"
 )
 
-func ReadKeyCmd(configFilePath string, key string, outputFilePath string, traceOutFilePath string) (string, error) {
-	configurationMap, err := ReadConfigurationMap(configFilePath)
-
-	if err != nil {
-		return "", err
-	}
+func ReadKeyCmd(configurationMap *ConfigurationMap, key string, outputFilePath string, traceOutFilePath string) (string, error) {
 
 	memoryMap, traces, err := ReadMemoryMap(configurationMap)
 

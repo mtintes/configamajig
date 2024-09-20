@@ -30,7 +30,14 @@ var keyCmd = &cobra.Command{
 		outputFilePath := cmd.Flag("output").Value.String()
 		traceOutFilePath := cmd.Flag("memoryTraceOut").Value.String()
 
-		keyValue, err := actions.ReadKeyCmd(configFilePath, key, outputFilePath, traceOutFilePath)
+		configurationMap, err := actions.ReadConfigurationMap(configFilePath)
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		keyValue, err := actions.ReadKeyCmd(configurationMap, key, outputFilePath, traceOutFilePath)
 
 		if err != nil {
 			fmt.Println(err)

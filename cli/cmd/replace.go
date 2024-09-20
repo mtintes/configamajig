@@ -4,6 +4,8 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/mtintes/configamajig/actions"
 	"github.com/spf13/cobra"
 )
@@ -14,14 +16,18 @@ var replaceCmd = &cobra.Command{
 	Short: "Replaces the variables in the input file using a config file",
 	Long:  `This is for replacing the variables in the input file using a config file.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		configMap := cmd.Flag("config").Value.String()
-
+		configMapPath := cmd.Flag("config").Value.String()
 		traceFileOutput := cmd.Flag("memoryTraceOut").Value.String()
-
 		inputPath := cmd.Flag("input").Value.String()
-
 		outputPath := cmd.Flag("output").Value.String()
-		actions.ReplaceCmd(configMap, inputPath, outputPath, traceFileOutput)
+
+		configurationMap, err := actions.ReadConfigurationMap(configMapPath)
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		actions.ReplaceCmd(configurationMap, inputPath, outputPath, traceFileOutput)
 	},
 }
 

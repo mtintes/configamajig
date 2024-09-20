@@ -16,30 +16,28 @@ func TestReplaceCmd(t *testing.T) {
 	_ = afero.WriteFile(AppFs, "test.json", []byte(jsonData), 0644)
 	_ = afero.WriteFile(AppFs, "test.yaml", []byte(yamlData), 0644)
 
-	ConfigurationMap := `{
-		"version": "1.0.0",
-		"configs": [
+	ConfigurationMap := &ConfigurationMap{
+		Version: "1.0.0",
+		Configs: []Config{
 			{
-				"path": "test.json",
-				"mappings": [],
-				"applyFile": "after"
+				Path:      "test.json",
+				Mappings:  []Mapping{},
+				ApplyFile: "after",
 			},
 			{
-				"path": "test.yaml",
-				"mappings": [],
-				"applyFile": "after"
-			}
-		]
-	}`
-
-	_ = afero.WriteFile(AppFs, "config.json", []byte(ConfigurationMap), 0644)
+				Path:      "test.yaml",
+				Mappings:  []Mapping{},
+				ApplyFile: "after",
+			},
+		},
+	}
 
 	inputFile := "I am {{ .key }}"
 	outputFile := "I am key"
 
 	_ = afero.WriteFile(AppFs, "test.txt", []byte(inputFile), 0644)
 
-	ReplaceCmd("config.json", "test.txt", "output.txt", "")
+	ReplaceCmd(ConfigurationMap, "test.txt", "output.txt", "")
 
 	file, _ := afero.ReadFile(AppFs, "output.txt")
 

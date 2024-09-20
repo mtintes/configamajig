@@ -6,13 +6,7 @@ import (
 	"github.com/nqd/flat"
 )
 
-func ReplaceCmd(configMap string, inputPath string, outputPath string, traceFileOutput string) {
-	configurationMap, err := ReadConfigurationMap(configMap)
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+func ReplaceCmd(configurationMap *ConfigurationMap, inputPath string, outputPath string, traceFileOutput string) {
 
 	memoryMap, traces, err := ReadMemoryMap(configurationMap)
 

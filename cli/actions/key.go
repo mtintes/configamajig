@@ -55,5 +55,5 @@ func ReadKeyCmd(configurationMap *ConfigurationMap, key string, outputFilePath s
 			return "", errors.New("output file type not supported. (json/yaml)")
 		}
 	}
-	return flatMemoryMap[key].(string), nil
+	return flatMemoryMap[key].(string), err
 }

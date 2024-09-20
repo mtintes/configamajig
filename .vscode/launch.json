@@ -20,5 +20,13 @@
             "program": "${workspaceFolder}/cli",
             "args": ["read", "key", "--config", "../example-files/launchExamples/config.json", "-t", "../example-files/launchExamples/trace.md", "-o","../example-files/launchExamples/output.yaml", "globals.dbConfigs"],
         },
+        {
+            "name": "generate config",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cli",
+            "args": ["generate", "config"],
+        },
     ]
 }

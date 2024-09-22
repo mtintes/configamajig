@@ -13,9 +13,10 @@ type ConfigurationMap struct {
 }
 
 type Config struct {
-	Path      string    `json:"path" yaml:"path"`
-	Mappings  []Mapping `json:"mappings" yaml:"mappings"`
-	ApplyFile string    `json:"applyFile" yaml:"applyFile"`
+	Props     map[string]interface{} `json:"props" yaml:"props"`
+	Path      string                 `json:"path" yaml:"path"`
+	Mappings  []Mapping              `json:"mappings" yaml:"mappings"`
+	ApplyFile string                 `json:"applyFile" yaml:"applyFile"`
 }
 
 type Mapping struct {

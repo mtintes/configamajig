@@ -86,8 +86,13 @@ func traceToTable(traces *[]Trace, configs []Config, fileType string, memoryMap 
 	// t.SetOutputMirror(os.Stdout)
 	header := table.Row{""}
 	for order, config := range configs {
-		header = append(header, fmt.Sprintf("%s-%d", config.Path, order))
-		columns = append(columns, fmt.Sprintf("%s-%d", config.Path, order))
+		if config.Path == "" {
+			header = append(header, fmt.Sprintf("config-%d", order))
+			columns = append(columns, fmt.Sprintf("config-%d", order))
+		} else {
+			header = append(header, fmt.Sprintf("%s-%d", config.Path, order))
+			columns = append(columns, fmt.Sprintf("%s-%d", config.Path, order))
+		}
 	}
 
 	header = append(header, "PreTemplate")

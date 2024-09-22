@@ -17,26 +17,37 @@ func ReadMemoryMap(configurationMap *ConfigurationMap) (map[string]interface{}, 
 
 	for order, config := range configurationMap.Configs {
 
-		filePath := config.Path
-		fileType := findFileType(filePath)
-
+		if config.Path != "" && len(config.Props) != 0 {
+			return nil, &traces, errors.New("you can not have both props and path defined in the same config\nconfig number: " + fmt.Sprint(order) + "\npath: " + config.Path)
+		}
 		var err error
 		var file interface{}
+		var filePath string
 
-		file = returnStoredFile(storedFiles, filePath)
+		if config.Path != "" {
 
-		if file == nil {
-			if fileType == "json" {
-				file, err = SlurpJson(filePath)
-			} else if fileType == "yaml" {
-				file, err = SlurpYaml(filePath)
-			} else {
-				return nil, &traces, errors.New("file type not supported")
+			filePath = config.Path
+			fileType := findFileType(filePath)
+
+			file = returnStoredFile(storedFiles, filePath)
+
+			if file == nil {
+				if fileType == "json" {
+					file, err = SlurpJson(filePath)
+				} else if fileType == "yaml" {
+					file, err = SlurpYaml(filePath)
+				} else {
+					return nil, &traces, errors.New("file type not supported")
+				}
 			}
-		}
 
-		if err != nil {
-			return nil, &traces, err
+			if err != nil {
+				return nil, &traces, err
+			}
+
+		} else {
+			file = config.Props
+			filePath = "config"
 		}
 
 		flatFile, err := flat.Flatten(file.(map[string]interface{}), nil)
@@ -193,9 +204,6 @@ func templateMemoryMap(flatFile map[string]interface{}, traces []Trace) (map[str
 
 				if oldValue != flatFile[key] {
 					traces = append(traces, Trace{key: key, value: flatFile[key], oldValue: oldValue, changeType: "template"})
-				}
-				if err != nil {
-					return nil, traces, err
 				}
 			}
 		}

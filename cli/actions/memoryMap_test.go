@@ -486,3 +486,55 @@ func TestReadMemoryMap_PropToRoot(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, fmt.Sprint(expectedMemoryMap), fmt.Sprint(memoryMap))
 }
+
+func TestReadMemoryMap_Prop(t *testing.T) {
+
+	AppFs = afero.NewMemMapFs()
+
+	jsonData := `{
+		"key1": {
+			"key2": {
+				"key3": "value"}}
+	}`
+
+	_ = afero.WriteFile(AppFs, "test.json", []byte(jsonData), 0644)
+
+	config := ConfigurationMap{
+		Configs: []Config{
+			{
+				Path: "test.json",
+				Mappings: []Mapping{
+					{
+						InPath: "key1.key2",
+						ToPath: "newKey",
+					},
+				},
+				ApplyFile: "after",
+			},
+			{
+				Props: map[string]interface{}{
+					"key3": "value",
+				},
+				Mappings: []Mapping{
+					{
+						InPath: "key3",
+						ToPath: "newKey2",
+					},
+				},
+			},
+		},
+	}
+
+	expectedMemoryMap := map[string]interface{}{
+		"newKey": map[string]interface{}{
+			"key3": "value",
+		},
+		"newKey2": "value",
+	}
+
+	memoryMap, _, err := ReadMemoryMap(&config)
+
+	assert.Nil(t, err)
+	assert.Equal(t, fmt.Sprint(expectedMemoryMap), fmt.Sprint(memoryMap))
+
+}

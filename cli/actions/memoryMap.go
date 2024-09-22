@@ -106,6 +106,7 @@ func applyMappings(flatFile map[string]interface{}, mappings []Mapping, masterMe
 			if strings.HasPrefix(key, mapping.InPath+".") || key == mapping.InPath {
 				keySuffix := key[len(mapping.InPath):]
 				newKey := mapping.ToPath + keySuffix
+				newKey = strings.TrimPrefix(newKey, ".")
 				for memKey := range masterMemoryMap {
 					if strings.HasPrefix(memKey, newKey+".") || strings.HasPrefix(newKey, memKey+".") {
 						traces = append(traces, Trace{key: memKey, oldValue: masterMemoryMap[memKey], changeType: "delete", file: filePath})

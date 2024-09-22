@@ -449,3 +449,40 @@ func TestReadMemoryMap_Traces(t *testing.T) {
 	assert.Equal(t, 1, len(*traces))
 
 }
+
+func TestReadMemoryMap_PropToRoot(t *testing.T) {
+
+	AppFs = afero.NewMemMapFs()
+
+	jsonData := `{
+		"key1": {
+			"key2": {
+				"key3": "value"}}
+	}`
+
+	_ = afero.WriteFile(AppFs, "test.json", []byte(jsonData), 0644)
+
+	config := ConfigurationMap{
+		Configs: []Config{
+			{
+				Path: "test.json",
+				Mappings: []Mapping{
+					{
+						InPath: "key1.key2",
+						ToPath: "",
+					},
+				},
+				ApplyFile: "after",
+			},
+		},
+	}
+
+	expectedMemoryMap := map[string]interface{}{
+		"key3": "value",
+	}
+
+	memoryMap, _, err := ReadMemoryMap(&config)
+
+	assert.Nil(t, err)
+	assert.Equal(t, fmt.Sprint(expectedMemoryMap), fmt.Sprint(memoryMap))
+}

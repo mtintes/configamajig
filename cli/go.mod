@@ -1,6 +1,6 @@
 module github.com/mtintes/configamajig
 
-go 1.22.5
+go 1.22.7
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0

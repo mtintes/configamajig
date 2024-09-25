@@ -149,7 +149,11 @@ func buildRowInfo(traces *[]Trace, columns []string, key string, finalValue inte
 			for _, column := range columns {
 				if trace.file == column {
 					row.Columns[column] = Metadata{value: trace.value, crud: trace.changeType}
-					row.Columns["PreTemplate"] = Metadata{value: trace.value, crud: "none"}
+					if trace.changeType == "delete" {
+						row.Columns["PreTemplate"] = Metadata{value: nil, crud: "none"}
+					} else {
+						row.Columns["PreTemplate"] = Metadata{value: trace.value, crud: "none"}
+					}
 				}
 			}
 		}

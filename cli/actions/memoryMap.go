@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/nqd/flat"
+	"github.com/mtintes/configamajig/flatmap"
 )
 
 func ReadMemoryMap(configurationMap *ConfigurationMap) (map[string]interface{}, *[]Trace, error) {
@@ -50,7 +50,7 @@ func ReadMemoryMap(configurationMap *ConfigurationMap) (map[string]interface{}, 
 			filePath = "config"
 		}
 
-		flatFile, err := flat.Flatten(file.(map[string]interface{}), nil)
+		flatFile := flatmap.Do(file.(map[string]interface{}), flatmap.Options{JSONPath: false}) //&flat.Options{Safe: true}
 
 		if err != nil {
 			return nil, &traces, err
@@ -74,7 +74,7 @@ func ReadMemoryMap(configurationMap *ConfigurationMap) (map[string]interface{}, 
 		return nil, &traces, err
 	}
 
-	unflatten, err := flat.Unflatten(masterMemoryMap, nil)
+	unflatten, err := flatmap.Undo(masterMemoryMap, flatmap.Options{JSONPath: false})
 
 	if err != nil {
 		return nil, &traces, err
@@ -186,7 +186,7 @@ func createTrace(masterMemoryMap map[string]interface{}, key string, value inter
 func templateMemoryMap(flatFile map[string]interface{}, traces []Trace) (map[string]interface{}, []Trace, error) {
 
 	for i := 0; i < 10; i++ {
-		unflattenedFile, err := flat.Unflatten(flatFile, nil)
+		unflattenedFile, err := flatmap.Undo(flatFile, flatmap.Options{JSONPath: false})
 
 		if err != nil {
 			return nil, traces, err
@@ -208,5 +208,6 @@ func templateMemoryMap(flatFile map[string]interface{}, traces []Trace) (map[str
 			}
 		}
 	}
+
 	return flatFile, traces, nil
 }

@@ -538,3 +538,131 @@ func TestReadMemoryMap_Prop(t *testing.T) {
 	assert.Equal(t, fmt.Sprint(expectedMemoryMap), fmt.Sprint(memoryMap))
 
 }
+
+func TestMemoryMapWithArrays(t *testing.T) {
+
+	AppFs = afero.NewMemMapFs()
+
+	jsonData := `{
+		"key": [
+			{
+				"key1": "value"
+			},
+			{
+				"key2": "value2"
+			}
+		],
+		"keyTemplate": "{{ .key | toRawJson}}"
+	}`
+
+	_ = afero.WriteFile(AppFs, "test.json", []byte(jsonData), 0644)
+
+	config := ConfigurationMap{
+		Configs: []Config{
+			{
+				Path:      "test.json",
+				Mappings:  []Mapping{},
+				ApplyFile: "after",
+			},
+		},
+	}
+
+	expectedMemoryMap := map[string]interface{}{
+		"key": []interface{}{
+			map[string]interface{}{
+				"key1": "value",
+			},
+			map[string]interface{}{
+				"key2": "value2",
+			},
+		},
+		"keyTemplate": "[{\"key1\":\"value\"},{\"key2\":\"value2\"}]",
+	}
+
+	memoryMap, _, err := ReadMemoryMap(&config)
+
+	assert.Nil(t, err)
+	assert.Equal(t, fmt.Sprint(expectedMemoryMap), fmt.Sprint(memoryMap))
+}
+
+func TestMemoryMapWithJSON(t *testing.T) {
+
+	AppFs = afero.NewMemMapFs()
+
+	jsonData := `{
+		"key": {
+			"key1": "value",
+			"key2": "value2",
+			"key3": {
+				"key4": "value4"
+			}
+		},
+		"keyTemplate": "{{ .key | toJson}}"
+	}`
+
+	_ = afero.WriteFile(AppFs, "test.json", []byte(jsonData), 0644)
+
+	config := ConfigurationMap{
+		Configs: []Config{
+			{
+				Path:      "test.json",
+				Mappings:  []Mapping{},
+				ApplyFile: "after",
+			},
+		},
+	}
+
+	expectedMemoryMap := map[string]interface{}{
+		"key": map[string]interface{}{
+			"key1": "value",
+			"key2": "value2",
+			"key3": map[string]interface{}{
+				"key4": "value4",
+			},
+		},
+		"keyTemplate": "{\"key1\":\"value\",\"key2\":\"value2\",\"key3\":{\"key4\":\"value4\"}}",
+	}
+
+	memoryMap, _, err := ReadMemoryMap(&config)
+
+	assert.Nil(t, err)
+	assert.Equal(t, fmt.Sprint(expectedMemoryMap), fmt.Sprint(memoryMap))
+}
+
+func TestMemoryMapWithIntPropsIsOutlawed(t *testing.T) {
+
+	AppFs = afero.NewMemMapFs()
+
+	jsonData := `{
+		"key": {
+			"0": 1,
+			"1": 2
+		},
+		"keyTemplate": "{{ .key | toJson}}"
+	}`
+
+	_ = afero.WriteFile(AppFs, "test.json", []byte(jsonData), 0644)
+
+	config := ConfigurationMap{
+		Configs: []Config{
+			{
+				Path:      "test.json",
+				Mappings:  []Mapping{},
+				ApplyFile: "after",
+			},
+		},
+	}
+
+	expectedMemoryMap := map[string]interface{}{
+		"key": map[string]interface{}{
+			"0": 1,
+			"1": 2,
+		},
+		"keyTemplate": "{\"0\":1,\"1\":2}",
+	}
+
+	memoryMap, _, err := ReadMemoryMap(&config)
+
+	assert.Nil(t, err)
+	assert.Equal(t, fmt.Sprint(expectedMemoryMap), fmt.Sprint(memoryMap))
+}

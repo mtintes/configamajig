@@ -33,6 +33,19 @@
             "applyFile": "later"
         },
         {
+            "props": {
+                "deploymentConfigs": {
+                    "stage": "configChange"
+                }
+            },
+            "mappings": [
+                {
+                    "inPath": "deploymentConfigs",
+                    "toPath": "deploymentValues"
+                }
+            ]
+        },
+        {
             "path": "../example-files/launchExamples/integration.json",
             "mappings": [
                 {
@@ -60,6 +73,20 @@
                 {
                     "inPath": "deleteStandby",
                     "toPath": "deleteMe2"
+                }
+            ]
+        },
+        {
+            "props": {
+                "globalAppConfigs": {
+                    "globalProp1": "configValue1",
+                    "globalProp2": "configValue2"
+                }
+            },
+            "mappings": [
+                {
+                    "inPath": "globalAppConfigs",
+                    "toPath": "globals"
                 }
             ]
         }

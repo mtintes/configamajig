@@ -9,7 +9,7 @@
         "someOtherConfigs": "someOtherConfigs"
     },
     "someOtherThings": {
-        "thing1": "{{ .globals.dbConfigs }}",
+        "thing1": "{{ .globals.dbConfigs | toJson }}",
         "thing2": "thing2"
     },
     "deepValues":{
@@ -25,5 +25,14 @@
     },
     "deleteStandby": {
         "thing": "thing"
-    }
+    },
+    "someArrayStuff": [
+        {
+            "thing": "thing1"
+        },
+        {
+            "thing": "thing2"
+        }
+    ],
+    "someFlatArrayStuff": "{{ .someArrayStuff | toJson }}"
 }

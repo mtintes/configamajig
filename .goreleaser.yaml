@@ -44,6 +44,6 @@ dist: dist
 brews:
 - name: configamjig
   homepage: https://github.com/mtintes/homebrew-configamajig
-  tap:
+  repository:
     owner: mtintes
     name: homebrew-configamajig

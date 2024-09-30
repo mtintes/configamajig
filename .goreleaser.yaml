@@ -40,3 +40,10 @@ changelog:
       - "^test:"
 
 dist: dist
+
+brews:
+- name: configamjig
+  homepage: https://github.com/mtintes/homebrew-configamajig
+  tap:
+    owner: mtintes
+    name: homebrew-configamajig

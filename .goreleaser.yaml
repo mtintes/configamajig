@@ -42,7 +42,7 @@ changelog:
 dist: dist
 
 brews:
-- name: configamjig
+- name: configamajig
   homepage: https://github.com/mtintes/homebrew-configamajig
   repository:
     owner: mtintes

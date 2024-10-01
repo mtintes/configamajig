@@ -37,7 +37,7 @@ jobs:
 
     - name: Run GoReleaser
       env: 
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
       run: |
         goreleaser release
 

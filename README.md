@@ -1,4 +1,4 @@
-# configamajig
+# <img src="configamajig_icon.png" width="50px"/> configamajig 
 
 You know when you have 20 apps and they all are basically configured the same way, but not 100% the same? This is for that problem.
 
@@ -13,9 +13,34 @@ You need to sometimes use one value vs another in an env depending on another de
 
 Confused why something doesn't seem to template like you expect? configamajig has full value tracing so you can see which file changed what value super easy!
 
+## Install
+
+`brew install mtintes/configamajig/configamajig`
+
+Or `brew tap mtintes/configamajig` and then `brew install configamajig`.
+
+Or find latest build under [releases](https://github.com/mtintes/configamajig/releases)
+
+## Tips
+"configamajig" is a lot for anyone to type out. We recommend setting up an alias!
+
 ## Commands
+
+### Generate Config
+To generate a basic config file:
+```configamajig generate config >> config.json```
 
 ### Replace:
 Feed in an template file + a config and out comes a fully filled out file
 
 ```configamajig replace -c <CONFIG.json> -i <INPUT> -o <OUTPUT>```
+
+### Read Key:
+For finding the value of a specific key
+
+```configamajig read key -c <CONFIG.json> -o <OUTPUT>", "some.key"```
+
+
+## Contributing
+
+Wow, um that is super cool if you do want to help. I guess to start read through the current issue and if you think you can solve something or want to take a shot then post something on said issue. I guess we will figure it out from there.

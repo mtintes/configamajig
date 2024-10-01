@@ -1,0 +1,33 @@
+{
+    "configs": [
+        {
+            "path": "global.json",
+            "mappings": [
+                {
+                    "inPath": "globalAppConfigs",
+                    "toPath": "globals"
+                },
+                {
+                    "inPath": "deploymentConfigs",
+                    "toPath": "deploymentValues"
+                }
+            ],
+            "applyFile": "after"
+        },
+        {
+            "path": "regional.json",
+            "mappings": [
+                {
+                    "inPath": "globalAppConfigs",
+                    "toPath": "globals"
+                },
+                {
+                    "inPath": "deploymentConfigs",
+                    "toPath": "deploymentValues"
+                }
+            ],
+            "applyFile": "later"
+        }
+    ],
+    "version": "1.0.0"
+}

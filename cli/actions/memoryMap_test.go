@@ -666,3 +666,35 @@ func TestMemoryMapWithIntPropsIsOutlawed(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, fmt.Sprint(expectedMemoryMap), fmt.Sprint(memoryMap))
 }
+
+func TestMemoryMapWithMappedProps(t *testing.T) {
+
+	Config := ConfigurationMap{
+		Configs: []Config{
+			{
+				Props: map[string]interface{}{
+					"key": map[string]interface{}{
+						"key1": "value",
+					},
+				},
+				Mappings: []Mapping{
+					{
+						InPath: "key",
+						ToPath: "newKey",
+					},
+				},
+			},
+		},
+	}
+
+	expectedMemoryMap := map[string]interface{}{
+		"newKey": map[string]interface{}{
+			"key1": "value",
+		},
+	}
+
+	memoryMap, _, err := ReadMemoryMap(&Config)
+
+	assert.Nil(t, err)
+	assert.Equal(t, fmt.Sprint(expectedMemoryMap), fmt.Sprint(memoryMap))
+}

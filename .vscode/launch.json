@@ -28,5 +28,13 @@
             "program": "${workspaceFolder}/cli",
             "args": ["generate", "config"],
         },
+        {
+            "name": "remap",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cli",
+            "args": ["remap", "--config", "../example-files/launchExamples/config.json", "--output", "../example-files/launchExamples/output.yaml", "-t", "../example-files/launchExamples/trace.md"],
+        },
     ]
 }

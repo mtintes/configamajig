@@ -1,0 +1,23 @@
+{
+    "globalAppConfigs":{
+        "dbConfigs": "someGlobalConnectionString",
+        "someAPIKey": "someAPIKey",
+        "someOtherGlobalConfigs": "someOtherGlobalConfigs"
+    },
+    "deploymentConfigs":{
+        "stage": "development",
+        "someOtherConfigs": "someOtherConfigs"
+    },
+    "someArrayOfValues":[
+        {
+            "name": "test1",
+            "prop1": "test2",
+            "prop2": "test3"
+        },
+        {
+            "name": "test4",
+            "prop1": "test5",
+            "prop2": "test6"
+        }
+    ]
+}

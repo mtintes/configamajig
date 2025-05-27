@@ -1,0 +1,17 @@
+{
+    "globalAppConfigs":{
+        "dbConfigs": "someRegionalConnectionString",
+        "someAPIKey": "someAPIKey"
+    },
+    "deploymentConfigs":{
+        "stage": "integration",
+        "someOtherConfigs": "someOtherConfigs"
+    },
+    "someArrayOfValues":[
+        {
+            "name": "test49",
+            "prop1": "test59",
+            "prop2": "test69"
+        }
+    ]
+}

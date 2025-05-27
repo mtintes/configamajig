@@ -1,0 +1,11 @@
+{
+    "configs": [
+        {
+            "path": "global.json"
+        },
+        {
+            "path": "regional.json"
+        }
+    ],
+    "version": "1.0.0"
+}

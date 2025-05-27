@@ -1,0 +1,3 @@
+global.dbConfigs: {{ .globals.dbConfigs }}
+
+deploymentValues.stage: {{ .deploymentValues.stage }}
